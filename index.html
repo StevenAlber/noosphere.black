@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Noosphere Protocol</title>
+
+  <!-- Meta tags for noosphere.black -->
+  <meta name="description" content="When 1,000,000 minds connect, the black box opens. A collective consciousness experiment." />
+  <meta property="og:title" content="The Noosphere Protocol" />
+  <meta property="og:description" content="When 1,000,000 minds connect, the black box opens. Join the void before the threshold is crossed." />
+  <meta property="og:url" content="https://noosphere.black" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#02030b" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet" />
+
+  <!-- Three.js -->
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #02030b;
+      --accent: #7b5cff;
+      --accent-soft: rgba(123, 92, 255, 0.4);
+      --text-main: #f7f7ff;
+      --text-muted: #a1a2c3;
+      --danger: #ff3366;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at top, #060818 0, #02030b 40%, #000000 100%);
+      font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text-main);
+      overflow: hidden;
+    }
+
+    body {
+      position: relative;
+    }
+
+    canvas#bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      z-index: 0;
+    }
+
+    .noise {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background-image: url("image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+      mix-blend-mode: soft-light;
+    }
+
+    .vignette {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background: radial-gradient(circle at center, transparent 0, transparent 45%, rgba(0, 0, 0, 0.6) 100%);
+    }
+
+    main {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .shell {
+      max-width: 1200px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.1fr);
+      gap: 56px;
+      align-items: center;
+    }
+
+    @media (max-width: 900px) {
+      .shell {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 32px;
+      }
+      body {
+        overflow-y: auto;
+      }
+    }
+
+    .tagline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px 6px 6px;
+      border-radius: 999px;
+      background: rgba(5, 6, 24, 0.85);
+      border: 1px solid rgba(123, 92, 255, 0.35);
+      box-shadow: 0 0 18px rgba(123, 92, 255, 0.45);
+      margin-bottom: 18px;
+      backdrop-filter: blur(14px);
+    }
+
+    .tagline-pulse {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 0 rgba(123, 92, 255, 0.7);
+      animation: pulse 1.6s infinite ease-out;
+    }
+
+    .tagline-text {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(123, 92, 255, 0.7);
+      }
+      70% {
+        transform: scale(1.4);
+        box-shadow: 0 0 0 16px rgba(123, 92, 255, 0);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(123, 92, 255, 0);
+      }
+    }
+
+    h1 {
+      font-size: clamp(32px, 4.2vw, 52px);
+      line-height: 1.02;
+      letter-spacing: 0.02em;
+      margin-bottom: 16px;
+    }
+
+    .title-glow {
+      display: inline-block;
+      background: radial-gradient(circle at top left, #ffffff, #c4b4ff 40%, #7b5cff 70%, #111322 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 32px rgba(123, 92, 255, 0.65));
+    }
+
+    .subtitle {
+      max-width: 540px;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-muted);
+      margin-bottom: 26px;
+    }
+
+    .subtitle strong {
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .counter-row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 26px;
+      flex-wrap: wrap;
+    }
+
+    .counter-pill {
+      display: inline-flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 12px 16px;
+      border-radius: 18px;
+      background: radial-gradient(circle at top, rgba(123, 92, 255, 0.4), rgba(8, 8, 24, 0.96));
+      border: 1px solid rgba(123, 92, 255, 0.7);
+      box-shadow: 0 0 32px rgba(123, 92, 255, 0.8);
+      min-width: 160px;
+    }
+
+    .counter-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: rgba(230, 228, 255, 0.7);
+      margin-bottom: 4px;
+    }
+
+    .counter-value {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .counter-sub {
+      font-size: 11px;
+      color: rgba(210, 204, 255, 0.7);
+      margin-top: 2px;
+    }
+
+    .progress-rail {
+      flex: 1;
+      min-width: 200px;
+      height: 6px;
+      border-radius: 999px;
+      background: radial-gradient(circle at left, rgba(123, 92, 255, 0.2), rgba(10, 10, 22, 0.8));
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      position: absolute;
+      inset: 0;
+      width: 0%;
+      background: linear-gradient(90deg, #7b5cff, #ff4ecd, #ffa63d);
+      box-shadow: 0 0 14px rgba(123, 92, 255, 0.8);
+      transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .progress-stars {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow:
+        0 0 10px #fff,
+        0 0 24px #7b5cff,
+        0 0 44px #ff4ecd;
+      mix-blend-mode: screen;
+    }
+
+    .meta-row {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: rgba(152, 153, 204, 0.9);
+    }
+
+    .meta-row span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .meta-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ff4ecd, #7b5cff);
+      box-shadow: 0 0 12px rgba(255, 78, 205, 0.8);
+    }
+
+    .right-panel {
+      background: radial-gradient(circle at top, rgba(10, 10, 28, 0.92), rgba(3, 3, 10, 0.98));
+      border-radius: 26px;
+      padding: 24px 24px 22px;
+      border: 1px solid rgba(131, 127, 255, 0.6);
+      box-shadow:
+        0 0 40px rgba(34, 21, 125, 0.9),
+        0 0 120px rgba(255, 78, 205, 0.22);
+      backdrop-filter: blur(20px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .right-panel::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(123, 92, 255, 0.2), transparent 60%),
+        radial-gradient(circle at 110% 10%, rgba(255, 78, 205, 0.2), transparent 60%);
+      opacity: 0.9;
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .right-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .panel-title {
+      font-size: 13px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(206, 206, 255, 0.9);
+    }
+
+    .panel-badge {
+      font-size: 10px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.26);
+      background: rgba(4, 5, 20, 0.8);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: rgba(201, 201, 255, 0.9);
+    }
+
+    .orbits {
+      position: relative;
+      width: 100%;
+      height: 120px;
+      margin-bottom: 18px;
+    }
+
+    .orbit-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px dashed rgba(130, 127, 255, 0.4);
+      inset: 14px 18px;
+      transform-origin: center;
+      animation: orbit-spin 22s linear infinite;
+    }
+
+    .orbit-ring:nth-child(2) {
+      inset: 2px 6px;
+      border-style: solid;
+      border-color: rgba(255, 78, 205, 0.35);
+      animation-duration: 34s;
+      animation-direction: reverse;
+    }
+
+    .node {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow:
+        0 0 10px rgba(255, 255, 255, 0.8),
+        0 0 26px rgba(123, 92, 255, 0.9);
+      top: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .node:nth-child(2) {
+      top: auto;
+      bottom: -4px;
+      background: #ff4ecd;
+      box-shadow:
+        0 0 10px rgba(255, 78, 205, 0.9),
+        0 0 26px rgba(255, 166, 61, 0.9);
+    }
+
+    @keyframes orbit-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .form-title {
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .form-sub {
+      font-size: 12px;
+      color: rgba(195, 197, 255, 0.86);
+      margin-bottom: 18px;
+      line-height: 1.55;
+    }
+
+    .form-sub span {
+      color: #ffb84d;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 12px;
+      color: rgba(205, 206, 255, 0.8);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    input {
+      width: 100%;
+      border-radius: 999px;
+      border: 1px solid rgba(150, 146, 255, 0.75);
+      background: radial-gradient(circle at top, rgba(15, 15, 40, 0.95), rgba(5, 4, 16, 0.98));
+      padding: 10px 14px;
+      color: var(--text-main);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    input::placeholder {
+      color: rgba(149, 153, 209, 0.8);
+    }
+
+    input:focus {
+      border-color: #ffffff;
+      box-shadow:
+        0 0 0 1px rgba(123, 92, 255, 0.8),
+        0 0 24px rgba(123, 92, 255, 0.85);
+      background: radial-gradient(circle at top, rgba(22, 17, 58, 0.98), rgba(5, 4, 16, 0.98));
+    }
+
+    .cta-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    button[type="submit"] {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 22px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      cursor: pointer;
+      background: radial-gradient(circle at top left, #ffffff, #ffb84d 20%, #ff4ecd 60%, #7b5cff 100%);
+      color: #050417;
+      box-shadow:
+        0 0 18px rgba(255, 184, 77, 0.9),
+        0 0 38px rgba(255, 78, 205, 0.7);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+    }
+
+    button[type="submit"]::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(255, 255, 255, 0.3), transparent 40%, transparent 60%, rgba(255, 255, 255, 0.2));
+      mix-blend-mode: screen;
+      opacity: 0;
+      transform: translateX(-40%);
+      transition: opacity 0.3s, transform 0.6s;
+    }
+
+    button[type="submit"]:hover::after {
+      opacity: 1;
+      transform: translateX(40%);
+    }
+
+    button[type="submit"]:hover {
+      transform: translateY(-1px);
+      box-shadow:
+        0 0 26px rgba(255, 184, 77, 1),
+        0 0 52px rgba(255, 78, 205, 0.95);
+    }
+
+    button[type="submit"]:active {
+      transform: translateY(0);
+      box-shadow:
+        0 0 16px rgba(255, 184, 77, 0.9),
+        0 0 32px rgba(255, 78, 205, 0.85);
+    }
+
+    .hint {
+      font-size: 11px;
+      color: rgba(189, 194, 255, 0.8);
+      line-height: 1.5;
+    }
+
+    .hint strong {
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .status {
+      margin-top: 8px;
+      font-size: 11px;
+      min-height: 14px;
+    }
+
+    .status.ok {
+      color: #7dffb2;
+    }
+
+    .status.err {
+      color: var(--danger);
+    }
+
+    .footer {
+      margin-top: 14px;
+      font-size: 10px;
+      color: rgba(172, 175, 226, 0.8);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .footer span {
+      opacity: 0.94;
+    }
+
+    .footer strong {
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: #d1d1ff;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bg"></canvas>
+  <div class="noise"></div>
+  <div class="vignette"></div>
+
+  <main>
+    <div class="shell">
+      <!-- LEFT: Narrative -->
+      <section>
+        <div class="tagline">
+          <div class="tagline-pulse"></div>
+          <div class="tagline-text">Experimental collective consciousness protocol</div>
+        </div>
+
+        <h1>
+          <span class="title-glow">The Noosphere Protocol</span>
+        </h1>
+
+        <p class="subtitle">
+          A black box on the edge of the network. When
+          <strong>1,000,000</strong> minds connect, the box opens.
+          Until then, no roadmap, no whitepaper, no utility —
+          only a live count of those willing to step into the dark.
+        </p>
+
+        <div class="counter-row">
+          <div class="counter-pill">
+            <div class="counter-label">linked minds</div>
+            <div class="counter-value" id="counterValue">0</div>
+            <div class="counter-sub" id="counterSub">of 1,000,000 required to ignite the first shared dream</div>
+          </div>
+
+          <div class="progress-rail">
+            <div class="progress-fill" id="progressFill"></div>
+            <div class="progress-stars"></div>
+          </div>
+        </div>
+
+        <div class="meta-row">
+          <span><span class="meta-dot"></span> No token. No DAO. No roadmap.</span>
+          <span><span class="meta-dot"></span> One irreversible reveal at critical mass.</span>
+        </div>
+      </section>
+
+      <!-- RIGHT: Console -->
+      <section class="right-panel">
+        <div class="right-inner">
+          <div class="panel-header">
+            <div class="panel-title">Node registration console</div>
+            <div class="panel-badge">Phase 0 · sealed</div>
+          </div>
+
+          <div class="orbits">
+            <div class="orbit-ring">
+              <div class="node"></div>
+              <div class="node"></div>
+            </div>
+            <div class="orbit-ring">
+              <div class="node"></div>
+              <div class="node"></div>
+            </div>
+          </div>
+
+          <h2 class="form-title">Claim your coordinate in the void</h2>
+          <p class="form-sub">
+            You’ll receive <span>nothing</span> today — no drops, no perks, no promises.
+            Only a cryptic acknowledgment that you stood here
+            <span>before the threshold was crossed</span>.
+          </p>
+
+          <form id="noosphereForm" autocomplete="off">
+            <div class="field-group">
+              <label for="email">Contact vector</label>
+              <input id="email" name="email" type="email" required placeholder="signal@yourdomain" />
+            </div>
+
+            <div class="field-group">
+              <label for="alias">Chosen alias</label>
+              <input id="alias" name="alias" type="text" required placeholder="how you will be remembered in the log" />
+            </div>
+
+            <div class="cta-row">
+              <button type="submit">Link my mind</button>
+              <div class="hint">
+                The protocol stores a one-way hash of your email +
+                alias. Your raw coordinates are discarded after
+                transmission.
+              </div>
+            </div>
+
+            <div class="status" id="status"></div>
+
+            <div class="footer">
+              <span><strong>Phase 0</strong> · nothing is monetized · nothing is for sale</span>
+              <span>Countdown ends the instant the millionth node locks in.</span>
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // ---- Counter logic (front-end only demo) ----
+    const TARGET = 1000000;
+    const counterEl = document.getElementById("counterValue");
+    const progressEl = document.getElementById("progressFill");
+    const statusEl = document.getElementById("status");
+
+    // Pseudo-live baseline
+    let currentCount = Math.floor(1200 + Math.random() * 5000);
+
+    function updateCounterDisplay() {
+      counterEl.textContent = currentCount.toLocaleString("en-US");
+      const ratio = Math.min(currentCount / TARGET, 1);
+      progressEl.style.width = (ratio * 100).toFixed(4) + "%";
+    }
+
+    updateCounterDisplay();
+
+    // Slow autonomous micro-drifts to make it feel alive
+    setInterval(() => {
+      const bump = Math.random() < 0.6 ? 0 : 1;
+      currentCount += bump;
+      updateCounterDisplay();
+    }, 7000);
+
+    // ---- Form handling ----
+    function hashString(str) {
+      // Simple, non-cryptographic hash for demo purposes.
+      let hash = 0, i, chr;
+      if (str.length === 0) return hash.toString();
+      for (i = 0; i < str.length; i++) {
+        chr   = str.charCodeAt(i);
+        hash  = ((hash << 5) - hash) + chr;
+        hash |= 0;
+      }
+      return ("NOO" + Math.abs(hash)).padStart(10, "0");
+    }
+
+    function handleRegister(event) {
+      event.preventDefault();
+      const form = event.target;
+      const email = form.email.value.trim();
+      const alias = form.alias.value.trim();
+
+      if (!email || !alias) {
+        statusEl.textContent = "Both contact vector and alias are required.";
+        statusEl.className = "status err";
+        return;
+      }
+
+      const payload = {
+        email,
+        alias,
+        timestamp: new Date().toISOString(),
+      };
+      console.log("REGISTER_NODE", payload); // Replace with real API call later
+
+      // Optimistic front-end increment
+      currentCount += 1;
+      updateCounterDisplay();
+
+      const signature = hashString(email + "::" + alias + "::" + Date.now());
+      statusEl.textContent = `Node linked. Archive this receipt: ${signature}`;
+      statusEl.className = "status ok";
+
+      form.reset();
+    }
+
+    document.getElementById("noosphereForm").addEventListener("submit", handleRegister);
+
+    // ---- Three.js particle field ----
+    const canvas = document.getElementById("bg");
+    let scene, camera, renderer, particles, particleMaterial, particleCount;
+
+    function initScene() {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 2000);
+      camera.position.z = 420;
+
+      renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true,
+      });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0x02030b, 1);
+
+      const geometry = new THREE.BufferGeometry();
+
+      particleCount = 2600;
+      const positions = new Float32Array(particleCount * 3);
+      const colors = new Float32Array(particleCount * 3);
+
+      const color = new THREE.Color();
+
+      for (let i = 0; i < particleCount; i++) {
+        const i3 = i * 3;
+
+        const radius = 220 + Math.random() * 220;
+        const angle1 = Math.random() * 2 * Math.PI;
+        const angle2 = (Math.random() * 0.9 - 0.45) * Math.PI;
+
+        positions[i3] = Math.cos(angle1) * Math.cos(angle2) * radius;
+        positions[i3 + 1] = Math.sin(angle2) * radius * 0.7;
+        positions[i3 + 2] = Math.sin(angle1) * Math.cos(angle2) * radius;
+
+        const hue = 0.7 + Math.random() * 0.08;
+        const sat = 0.5 + Math.random() * 0.4;
+        const light = 0.45 + Math.random() * 0.3;
+        color.setHSL(hue, sat, light);
+
+        colors[i3] = color.r;
+        colors[i3 + 1] = color.g;
+        colors[i3 + 2] = color.b;
+      }
+
+      geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+
+      particleMaterial = new THREE.PointsMaterial({
+        size: 2.3,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.9,
+        blending: THREE.AdditiveBlending
+      });
+
+      particles = new THREE.Points(geometry, particleMaterial);
+      scene.add(particles);
+
+      const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+      scene.add(ambient);
+    }
+
+    let mouseX = 0, mouseY = 0;
+    let targetRotX = 0, targetRotY = 0;
+
+    function onMouseMove(event) {
+      mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+      mouseY = (event.clientY / window.innerHeight) * 2 - 1;
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const time = performance.now() * 0.00012;
+
+      targetRotY = mouseX * 0.6;
+      targetRotX = mouseY * 0.4;
+
+      particles.rotation.y += (targetRotY - particles.rotation.y) * 0.02;
+      particles.rotation.x += (targetRotX - particles.rotation.x) * 0.02;
+
+      particles.rotation.z = Math.sin(time * 0.7) * 0.1;
+
+      const s = 0.96 + Math.sin(time * 4.0) * 0.02;
+      particles.scale.set(s, s, s);
+
+      renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("resize", onWindowResize);
+
+    initScene();
+    animate();
+  </script>
+</body>
+</html>
