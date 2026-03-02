@@ -40,11 +40,12 @@
 
     html, body {
       width: 100%;
-      height: 100%;
+      min-height: 100vh;
       background: radial-gradient(circle at top, #060818 0, #02030b 40%, #000000 100%);
       font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--text-main);
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
 
     body {
@@ -82,11 +83,13 @@
       position: relative;
       z-index: 2;
       width: 100%;
-      height: 100%;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 24px;
+      padding-top: calc(24px + env(safe-area-inset-top, 0px));
+      padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
     }
 
     .shell {
@@ -99,12 +102,16 @@
     }
 
     @media (max-width: 900px) {
+      main {
+        align-items: flex-start;
+        justify-content: flex-start;
+        padding-top: calc(40px + env(safe-area-inset-top, 0px));
+        padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+      }
+
       .shell {
         grid-template-columns: minmax(0, 1fr);
         gap: 32px;
-      }
-      body {
-        overflow-y: auto;
       }
     }
 
@@ -578,7 +585,7 @@
           <div class="counter-pill">
             <div class="counter-label">linked minds</div>
             <div class="counter-value" id="counterValue">0</div>
-            <div class="counter-sub" id="counterSub">of 1,000,000 required to ignite the first shared dream</div>
+            <div class="counter-sub">of 1,000,000 required to ignite the first shared dream</div>
           </div>
 
           <div class="progress-rail">
@@ -652,13 +659,12 @@
   </main>
 
   <script>
-    // ---- Counter logic (front-end only demo) ----
+    // Counter logic
     const TARGET = 1000000;
     const counterEl = document.getElementById("counterValue");
     const progressEl = document.getElementById("progressFill");
     const statusEl = document.getElementById("status");
 
-    // Pseudo-live baseline
     let currentCount = Math.floor(1200 + Math.random() * 5000);
 
     function updateCounterDisplay() {
@@ -666,19 +672,16 @@
       const ratio = Math.min(currentCount / TARGET, 1);
       progressEl.style.width = (ratio * 100).toFixed(4) + "%";
     }
-
     updateCounterDisplay();
 
-    // Slow autonomous micro-drifts to make it feel alive
     setInterval(() => {
       const bump = Math.random() < 0.6 ? 0 : 1;
       currentCount += bump;
       updateCounterDisplay();
     }, 7000);
 
-    // ---- Form handling ----
+    // Form
     function hashString(str) {
-      // Simple, non-cryptographic hash for demo purposes.
       let hash = 0, i, chr;
       if (str.length === 0) return hash.toString();
       for (i = 0; i < str.length; i++) {
@@ -706,9 +709,8 @@
         alias,
         timestamp: new Date().toISOString(),
       };
-      console.log("REGISTER_NODE", payload); // Replace with real API call later
+      console.log("REGISTER_NODE", payload); // replace with real API later
 
-      // Optimistic front-end increment
       currentCount += 1;
       updateCounterDisplay();
 
@@ -721,7 +723,7 @@
 
     document.getElementById("noosphereForm").addEventListener("submit", handleRegister);
 
-    // ---- Three.js particle field ----
+    // Three.js background
     const canvas = document.getElementById("bg");
     let scene, camera, renderer, particles, particleMaterial, particleCount;
 
